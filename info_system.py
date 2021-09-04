@@ -20,6 +20,8 @@ import socket
 import re, uuid
 import requests
 import urllib.request
+import json
+import webbrowser
 
 from win32api import GetSystemMetrics
 
@@ -56,6 +58,18 @@ class Program:
         self.netSent = tk.StringVar()
         self.netRecv = tk.StringVar()
         
+        self.inputIp = tk.StringVar()
+        self.ip = tk.StringVar()
+        self.country = tk.StringVar()
+        self.city = tk.StringVar()
+        self.postal = tk.StringVar()
+        self.latitude = tk.StringVar()
+        self.longitude = tk.StringVar()
+        self.ipv4 = tk.StringVar()
+        self.state = tk.StringVar()
+        self.link = tk.StringVar()
+        
+        
 # %% wywołanie okna
         self.width = GetSystemMetrics(0)
         self.height = GetSystemMetrics(1)
@@ -63,7 +77,7 @@ class Program:
         self.pozY = self.height - 5
         self.window.geometry("310x400+"+str(self.pozX)+"+5")
         self.window.configure(background="black")
-        #self.window.overrideredirect(1) 
+        self.window.overrideredirect(1) 
         
         self.rama = tk.LabelFrame(self.window, padx=5, pady=5)
         self.rama.configure(background="black")
@@ -246,7 +260,89 @@ class Program:
         self.window.destroy()
         
     def sprawdz_IP(self):
-        return
+        self.top = tk.Toplevel()
+        self.top.geometry("600x400")
+        self.top.configure(background="black")
+        self.top.title("Geolokalizacja IP")
+        
+        self.liniaIp = tk.Label(self.top, text="IP:", font=("Arial"), bg="black", fg="gold")
+        self.liniaIp.place(x=170, y=11)
+        
+        self.liniaIp1 = tk.Entry(self.top, textvariable = self.inputIp)
+        self.liniaIp1.place(x=205, y=11)
+        
+        self.buttonIP = tk.Button(self.top, text=" Sprawdź ", command=self.wynik_IP)
+        self.buttonIP.place(x=350, y=8)
+               
+        self.top.mainloop()
+        
+    def wynik_IP(self):
+        self.ip = self.inputIp.get()
+        self.zap = requests.get("https://geolocation-db.com/json/"+self.ip+"&position=true").json()
+        self.country.set(self.zap["country_name"])
+        self.city.set(self.zap["city"])
+        self.postal.set(self.zap["postal"])
+        self.latitude.set(self.zap["latitude"])
+        self.longitude.set(self.zap["longitude"])
+        self.ipv4.set(self.zap["IPv4"])
+        self.state.set(self.zap["state"])
+        
+        self.dlugosc = self.zap["latitude"]
+        self.szerokosc = self.zap["longitude"]
+        
+        self.liniaGeo = ("_"*52)+" geolokalizacja "+("_"*52)
+        self.liniaGeo0 = ("_"*53)+" współrzędne "+("_"*53)
+        
+        self.liniaCountry = tk.Label(self.top, text=self.liniaGeo, font=("Arial", 7), bg="black", fg="DarkOrange")
+        self.liniaCountry.place(x=2, y=40)
+        
+        self.liniaCountry0 = tk.Label(self.top, text="Kraj:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry0.place(x=10, y=80)
+        
+        self.liniaCountry1 = tk.Label(self.top, textvariable = self.country, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry1.place(x=150, y=80)
+        
+        self.liniaCountry2 = tk.Label(self.top, text="Miasto:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry2.place(x=300, y=80)
+        
+        self.liniaCountry3 = tk.Label(self.top, textvariable = self.city, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry3.place(x=400, y=80)
+        
+        self.liniaCountry4 = tk.Label(self.top, text="Województwo:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry4.place(x=10, y=120)
+        
+        self.liniaCountry5 = tk.Label(self.top, textvariable = self.state, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry5.place(x=150, y=120)
+        
+        self.liniaCountry6 = tk.Label(self.top, text="Kod:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry6.place(x=300, y=120)
+        
+        self.liniaCountry7 = tk.Label(self.top, textvariable = self.postal, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry7.place(x=400, y=120)
+        
+        self.liniaCountry8 = tk.Label(self.top, text=self.liniaGeo0, font=("Arial", 7), bg="black", fg="DarkOrange")
+        self.liniaCountry8.place(x=2, y=160)
+        
+        self.liniaCountry9 = tk.Label(self.top, text="latitude:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry9.place(x=10, y=200)
+        
+        self.liniaCountry10 = tk.Label(self.top, textvariable = self.latitude, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry10.place(x=150, y=200)
+        
+        self.liniaCountry11 = tk.Label(self.top, text="longitude:", font=("Arial", 10, "bold"), bg="black", fg="DarkOrange")
+        self.liniaCountry11.place(x=300, y=200)
+        
+        self.liniaCountry12 = tk.Label(self.top, textvariable = self.longitude, font=("Arial", 10, "italic"), bg="black", fg="gold")
+        self.liniaCountry12.place(x=400, y=200)
+        
+        self.link.set("https://www.google.com/maps/search/?api=1&query="+str(self.dlugosc)+"+"+str(self.szerokosc))
+        
+        self.buttonWWW = tk.Button(self.top, text="Otwórz stronę", font=("Arial", 10), command=self.open_www)
+        self.buttonWWW.place(x=270, y=260)
+        
+    def open_www(self):
+        webbrowser.open(self.link.get())
+        
     
     def twoj_komputer(self):    
         uname = platform.uname()
