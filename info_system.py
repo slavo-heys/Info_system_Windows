@@ -16,6 +16,10 @@ Program jest w pełni darmowy z przeznaczeniem dla systemów Windows.
 
 import tkinter as tk
 import platform,socket,re,uuid,json,psutil,logging
+import socket
+import re, uuid
+import requests
+import urllib.request
 
 from win32api import GetSystemMetrics
 
@@ -27,6 +31,7 @@ class Program:
         self.linia = ("-"*34)+" System Information "+("-"*34)
         self.linia0 = ("-"*42)+" Memory "+("-"*42)
         self.linia1 = ("-"*40)+" Info Disks "+("-"*40)
+        self.linia2 = ("-"*42)+" Network "+("-"*42)
         
         self.system = tk.StringVar()
         self.machineName = tk.StringVar()
@@ -45,6 +50,11 @@ class Program:
         self.dyskPercent = tk.StringVar()
         self.dyskDeviceType = tk.StringVar()
         self.dyskPercent = tk.StringVar()
+        self.mac = tk.StringVar()
+        self.ip_address = tk.StringVar()
+        self.IP_adress = tk.StringVar()
+        self.netSent = tk.StringVar()
+        self.netRecv = tk.StringVar()
         
 # %% wywołanie okna
         self.width = GetSystemMetrics(0)
@@ -177,7 +187,46 @@ class Program:
         self.liniaDevice11.place(x = 240, y= 250)
         
         self.liniaDevice10 = tk.Label(self.rama, text = "%", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
-        self.liniaDevice10.place(x = 270, y= 250)
+        self.liniaDevice10.place(x = 268, y= 250)
+        
+        self.liniaOkno2 = tk.Label(self.rama, text = self.linia2, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaOkno2.place(x=0, y=270)
+        
+        self.liniaNetwork0 = tk.Label(self.rama, text = "ip:", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork0.place(x=2, y=300)
+        
+        self.liniaNetwork1 = tk.Label(self.rama, textvariable = self.ip_address, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork1.place(x=15, y=300)
+        
+        self.liniaNetwork0 = tk.Label(self.rama, text = "mac:", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork0.place(x=160, y=300)
+        
+        self.liniaNetwork1 = tk.Label(self.rama, textvariable = self.mac, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork1.place(x=180, y=300)
+        
+        self.liniaNetwork0 = tk.Label(self.rama, text = "IP:", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork0.place(x=2, y=320)
+        
+        self.liniaNetwork1 = tk.Label(self.rama, textvariable = self.IP_adress, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork1.place(x=15, y=320)
+        
+        self.liniaNetwork2 = tk.Label(self.rama, text = "Sent:", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork2.place(x=2, y=340)
+
+        self.liniaNetwork3 = tk.Label(self.rama, textvariable = self.netSent, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork3.place(x=30, y=340)   
+        
+        self.liniaNetwork2 = tk.Label(self.rama, text = "bytes", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork2.place(x=90, y=340)
+        
+        self.liniaNetwork2 = tk.Label(self.rama, text = "Recv:", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork2.place(x=160, y=340)
+
+        self.liniaNetwork3 = tk.Label(self.rama, textvariable = self.netRecv, font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork3.place(x=190, y=340)   
+        
+        self.liniaNetwork2 = tk.Label(self.rama, text = "bytes", font=("Arial", 7, "italic"), bg = "black", fg = "gold")
+        self.liniaNetwork2.place(x=250, y=340)
         
         
 # %% wywołanie definicji
@@ -185,6 +234,9 @@ class Program:
         self.cpu()
         self.memory()
         self.dyski()
+        self.network()
+        self.net_counters()
+        
 # %%        
         self.window.mainloop()
         
@@ -252,5 +304,21 @@ class Program:
         
         self.window.after(10000, self.dyski)
         
+    def network(self):
+        self.mac.set(':'.join(re.findall('..', '%012x' %uuid.getnode())))
+        self.hostname = socket.gethostname()
+        self.ip_address.set(socket.gethostbyname(self.hostname)) 
+        
+        self.ip = requests.get('https://api.ipify.org').text
+        self.IP_adress.set(self.ip)
+        
+        self.window.after(10000, self.network)
+        
+    def net_counters(self):
+        self.netCount = psutil.net_io_counters()
+        self.netSent.set(self.netCount.bytes_sent)
+        self.netRecv.set(self.netCount.bytes_recv)
+        
+        self.window.after(1000, self.net_counters)
         
 prog = Program()
